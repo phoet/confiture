@@ -1,46 +1,39 @@
 require "yaml"
-require 'logger'
+require "logger"
 
 module Confiture
-  class Configuration
+  module Configuration
     class << self
 
-      attr_accessor :secret, :key
+      attr_accessor :init, :options, :allowed_keys
 
-      # Rails initializer configuration.
+      # set which ones to configure
+      def confiture(*args)
+        @allowed_keys = args
+      end
+
+      # Rails initializer configuration:
       #
-      # Expects at least +secret+ and +key+ for the API call:
-      #
-      #   ASIN::Configuration.configure do |config|
+      #   Confiture::Configuration.configure do |config|
       #     config.secret = 'your-secret'
       #     config.key    = 'your-key'
       #   end
       #
-      # With the latest version of the Product Advertising API you need to include your associate_tag[https://affiliate-program.amazon.com/gp/advertising/api/detail/api-changes.html].
-      #
       # You may pass options as a hash as well:
       #
-      #   ASIN::Configuration.configure :secret => 'your-secret', :key => 'your-key'
+      #   Confiture::Configuration.configure :secret => 'your-secret', :key => 'your-key'
       #
       # Or configure everything using YAML:
       #
-      #   ASIN::Configuration.configure :yaml => 'config/asin.yml'
+      #   Confiture::Configuration.configure :yaml => 'config/asin.yml'
       #
-      #   ASIN::Configuration.configure :yaml => 'config/asin.yml' do |config, yml|
-      #     config.key = yml[Rails.env]['aws_access_key']
+      #   Confiture::Configuration.configure :yaml => 'config/asin.yml' do |config, yml|
+      #     config.key = yml[Rails.env]['key']
       #   end
       #
       # ==== Options:
       #
-      # [secret] the API secret key (required)
-      # [key] the API access key (required)
-      # [associate_tag] your Amazon associate tag. Default is blank (required in latest API version)
-      # [host] the host, which defaults to 'webservices.amazon.com'
-      # [logger] a different logger than logging to STDERR (nil for no logging)
-      # [version] a custom version of the API calls. Default is 2010-11-01
-      # [item_type] a different class for SimpleItem, use :mash / :rash for Hashie::Mash / Hashie::Rash or :raw for a plain hash
-      # [cart_type] a different class for SimpleCart, use :mash / :rash for Hashie::Mash / Hashie::Rash or :raw for a plain hash
-      # [node_type] a different class for SimpleNode, use :mash / :rash for Hashie::Mash / Hashie::Rash or :raw for a plain hash
+      # [yaml|yml] path to a yaml file with configuration
       #
       def configure(options={})
         init_config
@@ -69,20 +62,23 @@ module Confiture
         init_config(true)
       end
 
-      # Check if a key is set
-      #
-      def blank?(key)
-        val = self.send :key
-        val.nil? || val.empty?
-      end
-
       private
 
       def init_config(force=false)
         return if @init && !force
-        @init          = true
-        @secret        = ''
-        @key           = ''
+        @init     = true
+        @options  = {}
+      end
+
+      def method_missing(meth, *args)
+        meth = "#{meth}"
+        if meth =~ /.+=/ && args.size == 1
+          @options[meth[0..-2]] = args.last
+        elsif args.size == 0
+          @options[meth]
+        else
+          super
+        end
       end
     end
   end

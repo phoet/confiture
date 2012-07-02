@@ -2,7 +2,7 @@ $:.unshift File.join(File.dirname(__FILE__),'..','..','lib')
 
 require 'rspec'
 require 'confiture'
-require 'pp'
+require 'pry'
 
 RSpec.configure do |config|
   config.mock_with :rspec

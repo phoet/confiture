@@ -3,10 +3,6 @@ require 'spec_helper'
 module Confiture
   describe Confiture do
     context "configuration" do
-      it "should fail with wrong configuration key" do
-        lambda { @helper.configure :wrong => 'key' }.should raise_error(NoMethodError)
-      end
-
       it "should work with a configuration block" do
         conf = Confiture::Configuration.configure do |config|
           config.key = 'bla'
