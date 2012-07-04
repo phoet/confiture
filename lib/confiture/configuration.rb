@@ -1,15 +1,20 @@
 require "yaml"
-require "logger"
 
 module Confiture
   module Configuration
-    class << self
+    def self.included(base)
+      base.extend ClassExtension
+    end
 
-      attr_accessor :init, :options, :allowed_keys
+    module ClassExtension
+      attr_accessor :init, :options, :allowed_keys, :defaults
 
-      # set which ones to configure
-      def confiture(*args)
-        @allowed_keys = args
+      def confiture_defaults(defaults)
+        @defaults = defaults
+      end
+
+      def confiture_allowed_keys(*allowed_keys)
+        @allowed_keys = allowed_keys
       end
 
       # Rails initializer configuration:
@@ -58,7 +63,7 @@ module Confiture
 
       # Resets configuration to defaults
       #
-      def reset
+      def reset!
         init_config(true)
       end
 
@@ -66,19 +71,28 @@ module Confiture
 
       def init_config(force=false)
         return if @init && !force
-        @init     = true
-        @options  = {}
+        @init    = true
+        @options = @defaults.dup if @defaults
+        @options ||= {}
       end
 
       def method_missing(meth, *args)
         meth = "#{meth}"
         if meth =~ /.+=/ && args.size == 1
-          @options[meth[0..-2]] = args.last
+          key = meth[0..-2].to_sym
+          check_key!(key)
+          @options[key] = args.last
         elsif args.size == 0
-          @options[meth]
+          key = meth.to_sym
+          check_key!(key)
+          @options[key]
         else
           super
         end
+      end
+
+      def check_key!(key)
+        raise "#{key} is not allowed, use one of #{@allowed_keys}" if @allowed_keys && !@allowed_keys.include?(key)
       end
     end
   end
