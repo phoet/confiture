@@ -7,8 +7,6 @@ module Confiture
     end
 
     module ClassExtension
-      attr_accessor :init, :options, :allowed_keys, :defaults
-
       def confiture_defaults(defaults)
         @defaults = defaults
       end
@@ -40,8 +38,8 @@ module Confiture
       #
       # [yaml|yml] path to a yaml file with configuration
       #
-      def configure(options={})
-        init_config
+      def configure(options={},reset=false)
+        init_config(reset)
         if yml_path = options[:yaml] || options[:yml]
           yml = File.open(yml_path) { |file| YAML.load(file) }
           if block_given?
@@ -61,6 +59,13 @@ module Confiture
         self
       end
 
+      def with_config(options={})
+        current_data = data
+        configure(options, true)
+      ensure
+        self.data = current_data
+      end
+
       # Resets configuration to defaults
       #
       def reset!
@@ -69,11 +74,18 @@ module Confiture
 
       private
 
+      def data
+        Thread.current[:confiture]
+      end
+
+      def data=(data)
+        Thread.current[:confiture] = data
+      end
+
       def init_config(force=false)
         return if @init && !force
-        @init    = true
-        @options = @defaults.dup if @defaults
-        @options ||= {}
+        @init = true
+        self.data = Data.new(@defaults)
       end
 
       def method_missing(meth, *args)
@@ -81,11 +93,11 @@ module Confiture
         if meth =~ /.+=/ && args.size == 1
           key = meth[0..-2].to_sym
           check_key!(key)
-          @options[key] = args.last
+          data.options[key] = args.last
         elsif args.size == 0
           key = meth.to_sym
           check_key!(key)
-          @options[key]
+          data.options[key]
         else
           super
         end

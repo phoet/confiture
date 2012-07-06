@@ -72,5 +72,15 @@ module Confiture
         conf.key.should eql('secret_yml')
       end
     end
+
+    context "with_config" do
+      it "should have a config on a per block basis" do
+        config = Config.configure(:key => "value")
+        config.with_config(:key => "bla") do
+          Config.key.should eql("bla")
+        end
+        Config.key.should eql("value")
+      end
+    end
   end
 end
