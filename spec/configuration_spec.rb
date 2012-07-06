@@ -5,6 +5,11 @@ module Confiture
     include Confiture::Configuration
   end
 
+  class Valid
+    include Confiture::Configuration
+    confiture_mandatory_keys(:key)
+  end
+
   class Allowed
     include Confiture::Configuration
     confiture_allowed_keys(:key)
@@ -16,6 +21,22 @@ module Confiture
   end
 
   describe Confiture do
+    context "reset" do
+      it "should reset the configuration" do
+        Config.configure(:key => "value").tap do |config|
+          config.key.should eql("value")
+          config.reset!
+          config.key.should be_nil
+        end
+      end
+    end
+
+    context "validate" do
+      it "should validate the configuration" do
+        expect { Valid.configure.validate! }.should raise_error(ArgumentError, "you are missing mandatory configuration options. please set [:key]")
+      end
+    end
+
     context "defaults" do
       it "should have default settings" do
         Default.configure.key.should eql('value')
@@ -28,6 +49,7 @@ module Confiture
         Default.configure.key.should eql('value')
       end
     end
+
     context "allowed_keys" do
       it "should have access to allowed fields" do
         Allowed.configure do |config|
@@ -58,9 +80,10 @@ module Confiture
       end
 
       it "should read configuration from yml" do
-        config = Config.configure :yaml => 'spec/config.yml'
-        config.secret.should eql('secret_yml')
-        config.key.should eql('key_yml')
+        Config.configure(:yaml => 'spec/config.yml').tap do |config|
+          config.secret.should eql('secret_yml')
+          config.key.should eql('key_yml')
+        end
       end
 
       it "should read configuration from yml with block" do
@@ -75,9 +98,10 @@ module Confiture
 
     context "with_config" do
       it "should have a config on a per block basis" do
-        config = Config.configure(:key => "value")
-        config.with_config(:key => "bla") do
-          Config.key.should eql("bla")
+        Config.configure(:key => "value").tap do |config|
+          config.with_config(:key => "bla") do
+            Config.key.should eql("bla")
+          end
         end
         Config.key.should eql("value")
       end

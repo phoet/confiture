@@ -1,7 +1,7 @@
 ## Infos
 
 ![Status](http://stillmaintained.com/phoet/confiture.png "Status")
-![Build](http://travis-ci.org/phoet/confiture.png "Build")
+![Build](https://travis-ci.org/phoet/confiture.png "Build")
 
 ## Installation
 
