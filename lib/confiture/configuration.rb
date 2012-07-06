@@ -117,12 +117,14 @@ module Confiture
         @allowed_keys.nil? || @allowed_keys.include?(key)
       end
 
-      private
-
+      # Checks if a given key is nil or empty.
+      #
       def blank?(key)
         val = self.send key
         val.nil? || val.empty?
       end
+
+      private
 
       def data
         Thread.current[:confiture]
