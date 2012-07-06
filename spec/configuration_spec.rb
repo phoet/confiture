@@ -40,7 +40,7 @@ module Confiture
           Allowed.configure do |config|
             config.not_allowed_key = 'bla'
           end
-        end.should raise_error(RuntimeError, "not_allowed_key is not allowed, use one of [:key]")
+        end.should raise_error(ArgumentError, "not_allowed_key is not allowed, use one of [:key]")
       end
 
       it "should access any field if not restricted" do

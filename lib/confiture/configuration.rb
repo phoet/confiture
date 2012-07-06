@@ -104,7 +104,7 @@ module Confiture
       end
 
       def check_key!(key)
-        raise "#{key} is not allowed, use one of #{@allowed_keys}" if @allowed_keys && !@allowed_keys.include?(key)
+        raise ArgumentError.new("#{key} is not allowed, use one of #{@allowed_keys}") if @allowed_keys && !@allowed_keys.include?(key)
       end
     end
   end
