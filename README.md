@@ -1,6 +1,5 @@
 ## Infos
 
-![Status](http://stillmaintained.com/phoet/confiture.png "Status")
 ![Build](https://travis-ci.org/phoet/confiture.png "Build")
 
 ## Installation
@@ -44,6 +43,6 @@ Inline style configuration:
 ## License
 
 "THE BEER-WARE LICENSE" (Revision 42):
-ps@nofail.de[mailto:ps@nofail.de] wrote this file. As long as you retain this notice you
+[ps@nofail.de](mailto:ps@nofail.de) wrote this file. As long as you retain this notice you
 can do whatever you want with this stuff. If we meet some day, and you think
 this stuff is worth it, you can buy me a beer in return Peter Schröder
