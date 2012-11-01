@@ -92,6 +92,9 @@ module Confiture
       # Raises an ArgumentError if the configuration is not valid.
       #
       def validate!
+        if data.nil?
+          raise ArgumentError.new("you are working on an empty configuration. run configuration code first!")
+        end
         unless valid?
           raise ArgumentError.new("you are missing mandatory configuration options. please set #{@mandatory_keys}")
         end

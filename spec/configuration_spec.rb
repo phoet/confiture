@@ -35,6 +35,11 @@ module Confiture
       it "should validate the configuration" do
         expect { Valid.configure.validate! }.should raise_error(ArgumentError, "you are missing mandatory configuration options. please set [:key]")
       end
+
+      it "should warn if a mandatory key is set and no configuration given" do
+        Valid.send :data=, nil
+        expect { Valid.validate! }.should raise_error(ArgumentError, "you are working on an empty configuration. run configuration code first!")
+      end
     end
 
     context "defaults" do
