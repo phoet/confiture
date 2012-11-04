@@ -32,13 +32,13 @@ Rails style initializer (config/initializers/asin.rb):
 
 YAML style configuration:
 
-    Your::Configuration.configure :yaml => 'config/some.yml'
+    Your::Configuration.configure yaml: 'config/some.yml'
 
 Inline style configuration:
 
-    Your::Configuration.configure :secret => 'your-secret', :key => 'your-key'
+    Your::Configuration.configure secret: 'your-secret', key: 'your-key'
     # or
-    client.configure :secret => 'your-secret', :key => 'your-key'
+    client.configure secret: 'your-secret', key: 'your-key'
 
 ## License
 
