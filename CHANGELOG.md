@@ -1,3 +1,7 @@
+## 0.1.4
+
+- fixing https://github.com/phoet/confiture/issues/1
+
 ## 0.1.3
 
 - raising an error when using config before initialization
