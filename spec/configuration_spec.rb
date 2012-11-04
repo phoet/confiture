@@ -17,13 +17,13 @@ module Confiture
 
   class Default
     include Confiture::Configuration
-    confiture_defaults(:key => 'value')
+    confiture_defaults(key: 'value')
   end
 
   describe Confiture do
     context "reset" do
       it "should reset the configuration" do
-        Config.configure(:key => "value").tap do |config|
+        Config.configure(key: "value").tap do |config|
           config.key.should eql("value")
           config.reset!
           config.key.should be_nil
@@ -49,7 +49,7 @@ module Confiture
 
       it "should restore defaults" do
         Default.configure.key.should eql('value')
-        Default.configure(:key => 'bla').key.should eql('bla')
+        Default.configure(key: 'bla').key.should eql('bla')
         Default.reset!
         Default.configure.key.should eql('value')
       end
@@ -85,14 +85,14 @@ module Confiture
       end
 
       it "should read configuration from yml" do
-        Config.configure(:yaml => 'spec/config.yml').tap do |config|
+        Config.configure(yaml: 'spec/config.yml').tap do |config|
           config.secret.should eql('secret_yml')
           config.key.should eql('key_yml')
         end
       end
 
       it "should read configuration from yml with block" do
-        conf = Config.configure :yaml => 'spec/config.yml' do |config, yml|
+        conf = Config.configure yaml: 'spec/config.yml' do |config, yml|
           config.secret = nil
           config.key = yml['secret']
         end
@@ -103,12 +103,48 @@ module Confiture
 
     context "with_config" do
       it "should have a config on a per block basis" do
-        Config.configure(:key => "value").tap do |config|
-          config.with_config(:key => "bla") do
-            Config.key.should eql("bla")
-          end
+        Config.configure(key: "value")
+        Config.key.should eql("value")
+        Config.with_config(key: "bla") do
+          Config.key.should eql("bla")
         end
         Config.key.should eql("value")
+      end
+    end
+
+    context "scoping" do
+      it "should scope to the configuration class" do
+        mapping = {
+          Config  => "bla",
+          Valid   => "nups",
+          Allowed => "blupp",
+          Default => "nups",
+        }
+        mapping.each do |clazz, value|
+          clazz.reset!
+          clazz.configure(key: value)
+        end
+        mapping.each do |clazz, value|
+          clazz.key.should eql(value)
+        end
+      end
+
+      it "should allow threads to override configuration" do
+        Config.reset!
+        Config.configure(key: "nups")
+        t = Thread.new do
+          Config.key.should eql("nups")
+          Thread.stop
+          Config.key.should eql("nups")
+        end
+        sleep 0.1 while t.status != 'sleep'
+        Config.with_config(key: "dups") do
+          Config.key.should eql("dups")
+          t.run
+          t.join
+          Config.key.should eql("dups")
+        end
+        Config.key.should eql("nups")
       end
     end
   end

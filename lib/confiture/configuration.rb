@@ -39,13 +39,13 @@ module Confiture
       #
       # You may pass options as a hash as well:
       #
-      #   Confiture::Configuration.configure :secret => 'your-secret', :key => 'your-key'
+      #   Confiture::Configuration.configure secret: 'your-secret', key: 'your-key'
       #
       # Or configure everything using YAML:
       #
-      #   Confiture::Configuration.configure :yaml => 'config/asin.yml'
+      #   Confiture::Configuration.configure yaml: 'config/asin.yml'
       #
-      #   Confiture::Configuration.configure :yaml => 'config/asin.yml' do |config, yml|
+      #   Confiture::Configuration.configure yaml: 'config/asin.yml' do |config, yml|
       #     config.key = yml[Rails.env]['key']
       #   end
       #
@@ -53,7 +53,7 @@ module Confiture
       #
       # [yaml|yml] path to a yaml file with configuration
       #
-      def configure(options={},reset=false)
+      def configure(options = {}, reset = false)
         init_config(reset)
         if yml_path = options[:yaml] || options[:yml]
           yml = File.open(yml_path) { |file| YAML.load(file) }
@@ -77,10 +77,11 @@ module Confiture
       # Run a block of code with temporary configuration.
       #
       def with_config(options={})
-        current_data = data
-        configure(options, true)
+        self.current_data = data
+        configure(options)
+        yield
       ensure
-        self.data = current_data
+        self.current_data = nil
       end
 
       # Resets configuration to defaults
@@ -130,11 +131,20 @@ module Confiture
       private
 
       def data
-        Thread.current[:confiture]
+        current_data || @data
       end
 
       def data=(data)
-        Thread.current[:confiture] = data
+        @data = data
+      end
+
+      def current_data
+        Thread.current["__confiture_#{self}"]
+      end
+
+      def current_data=(data)
+        data = Data.new(data.options) unless data.nil?
+        Thread.current["__confiture_#{self}"] = data
       end
 
       def init_config(force=false)
@@ -144,13 +154,15 @@ module Confiture
       end
 
       def method_missing(meth, *args)
-        meth = "#{meth}"
-        if meth =~ /.+=/ && args.size == 1
-          key = meth[0..-2].to_sym
+        key = "#{meth}"
+        if respond_to?(meth)
+          super
+        elsif key =~ /.+=/ && args.size == 1
+          key = key[0..-2].to_sym
           validate_key!(key)
           data.options[key] = args.last
         elsif args.size == 0
-          key = meth.to_sym
+          key = key.to_sym
           validate_key!(key)
           data.options[key]
         else
