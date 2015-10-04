@@ -4,41 +4,61 @@
 
 ## Installation
 
-    gem install confiture
+```bash
+gem install confiture
+```
 
 or in your Gemfile:
 
-    gem "confiture"
+```ruby
+gem "confiture"
+```
 
 ## Usage
 
 In order to use confiture, just include it into a configuration klass:
 
-    module Your
-      class Configuration
-        include Confiture::Configuration
-        
-        confiture_allowed_keys(:secret, :key)
-        confiture_defaults(secret: 'SECRET_STUFF', key: 'EVEN_MOAR_SECRET')
-      end
-    end
+```ruby
+module Your
+  class Configuration
+    include Confiture::Configuration
+    
+    confiture_allowed_keys(:secret, :key)
+    confiture_defaults(secret: 'SECRET_STUFF', key: 'EVEN_MOAR_SECRET')
+  end
+end
+```
 
 Rails style initializer (config/initializers/asin.rb):
 
-    Your::Configuration.configure do |config|
-      config.secret = 'your-secret'
-      config.key    = 'your-key'
-    end
+```ruby
+Your::Configuration.configure do |config|
+  config.secret = 'your-secret'
+  config.key    = 'your-key'
+end
+```
 
 YAML style configuration:
 
-    Your::Configuration.configure yaml: 'config/some.yml'
+```ruby
+Your::Configuration.configure yaml: 'config/some.yml'
+```
 
 Inline style configuration:
 
-    Your::Configuration.configure secret: 'your-secret', key: 'your-key'
-    # or
-    client.configure secret: 'your-secret', key: 'your-key'
+```ruby
+Your::Configuration.configure secret: 'your-secret', key: 'your-key'
+# or
+client.configure secret: 'your-secret', key: 'your-key'
+```
+
+Temporary configuration:
+
+```ruby
+Your::Configuration.with_config(key: "temp-key") do
+  [...]
+end
+```
 
 ## License
 
